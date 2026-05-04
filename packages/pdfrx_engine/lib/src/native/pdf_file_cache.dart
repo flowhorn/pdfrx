@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
+import 'package:pdfium_dart/pdfium_dart.dart' as pdfium_bindings;
 import 'package:synchronized/extension.dart';
 
 import '../pdf_document.dart';
@@ -16,7 +17,6 @@ import '../pdfrx_entry_functions.dart';
 import '../pdfrx_initialize_dart.dart';
 import 'http_cache_control.dart';
 import 'native_utils.dart';
-import 'package:pdfium_dart/pdfium_dart.dart' as pdfium_bindings;
 
 final _rafFinalizer = Finalizer<RandomAccessFile>((raf) {
   // Attempt to close the file if it hasn't been closed explicitly.
@@ -377,7 +377,7 @@ Future<PdfDocument> pdfDocumentFromUri(
               timeout: timeout,
             );
           }
-          final readEnd = min(p + size, (blockId + 1) * cache.blockSize);
+          final readEnd = min(p + size, (blockId + 1) * cache!.blockSize);
           final sizeToRead = readEnd - p;
           await cache.read(buffer, bufferPosition, p, sizeToRead);
           p += sizeToRead;
@@ -445,7 +445,7 @@ Future<_DownloadResult> _downloadBlock(
     ..headers.addAll({
       if (useRangeAccess) 'Range': 'bytes=$blockOffset-${end - 1}',
       if (addCacheControlHeaders) ...cache.cacheControlState.getHeadersForFetch(),
-      if (headers != null) ...headers,
+      ...?headers,
     });
   late final http.StreamedResponse response;
   try {
